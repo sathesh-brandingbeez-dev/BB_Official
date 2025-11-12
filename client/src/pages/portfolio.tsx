@@ -3,8 +3,12 @@ import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Users } from "lucide-react";
 import { Link } from "wouter";
+import AcGraph from "../../public/images/AC-Graphics.jpg";
+import MyVkard from "../../public/images/myvkard_nfc1.png";
+import WellImage from "../../public/images/Wellenpuls_App.png";
+import Octupus from "../../public/images/octupus.png";
 
-// Local data (edit as you like)
+// Local data
 const CASE_STUDIES = [
     {
         title: "AC Graphics CRM",
@@ -18,7 +22,7 @@ const CASE_STUDIES = [
         features: ["Lead automation", "Pipeline tracking", "Quote generation", "Client management"],
         techStack: ["Custom Web App", "API Integrations", "Automated Workflows"],
         timeline: "2 months Phase 1, scalable",
-        image: "/AC-Graphics.jpg",
+        image: AcGraph,
     },
     {
         title: "MyVKard",
@@ -32,7 +36,7 @@ const CASE_STUDIES = [
         features: ["NFC integration", "Payment processing", "Profile builder", "QR code generation"],
         techStack: ["React", "Node.js", "Stripe API", "NFC Protocols"],
         timeline: "7 weeks from concept to launch",
-        image: "/myvkard_nfc1.png",
+        image: MyVkard,
     },
     {
         title: "Wellenpuls Health App",
@@ -46,22 +50,22 @@ const CASE_STUDIES = [
         features: ["Bluetooth connectivity", "AI health coach", "Progress tracking", "Personalized insights"],
         techStack: ["React Native", "Bluetooth APIs", "AI Integration"],
         timeline: "6 weeks mobile development",
-        image: "/Wellenpuls_App.png",
+        image: WellImage,
     },
-    {
-        title: "E-Commerce Platform",
-        industry: "Retail",
-        badge: "Full-Stack Solution",
-        investment: "$8.5K",
-        totalValue: "$22K Market Value",
-        roi: "159%",
-        description:
-            "Complete e-commerce platform with inventory management, payment processing, and analytics dashboard.",
-        features: ["Product management", "Payment gateway", "Order tracking", "Analytics dashboard"],
-        techStack: ["Next.js", "PostgreSQL", "Stripe", "AWS"],
-        timeline: "12 weeks full development",
-        image: "/modern-ecommerce-dashboard-with-products-and-analy.jpg",
-    },
+    // {
+    //     title: "E-Commerce Platform",
+    //     industry: "Retail",
+    //     badge: "Full-Stack Solution",
+    //     investment: "$8.5K",
+    //     totalValue: "$22K Market Value",
+    //     roi: "159%",
+    //     description:
+    //         "Complete e-commerce platform with inventory management, payment processing, and analytics dashboard.",
+    //     features: ["Product management", "Payment gateway", "Order tracking", "Analytics dashboard"],
+    //     techStack: ["Next.js", "PostgreSQL", "Stripe", "AWS"],
+    //     timeline: "12 weeks full development",
+    //     image: "/modern-ecommerce-dashboard-with-products-and-analy.jpg",
+    // },
 ];
 
 // Small, reusable local card (no external imports)
@@ -155,7 +159,7 @@ export default function PortfolioPage() {
                                 <span className="font-extrabold">with Full Transparency</span>
                             </h1>
                             <p className="text-lg sm:text-xl text-white/90 mt-4">
-                                Actual costs, timelines, tech stack, and ROI — verified and documented.
+                                Actual costs, timelines, tech stack, and ROI verified and documented.
                                 No fluff. Just results you can trust.
                             </p>
 
@@ -177,13 +181,13 @@ export default function PortfolioPage() {
                             </div>
 
                             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-                                <Link href="#case-studies">
+                                <Link href="/">
                                     <Button className="bg-white text-brand-purple hover:bg-brand-purple hover:text-white">
                                         Explore Case Studies
                                         <ArrowRight className="ml-2 h-5 w-5" />
                                     </Button>
                                 </Link>
-                                <Link href="#estimate">
+                                <Link href="/pricing-calculator">
                                     <Button
                                         variant="outline"
                                         className="border-2 border-white bg-transparent text-white hover:bg-brand-purple hover:text-white hover:border-brand-purple"
@@ -213,7 +217,7 @@ export default function PortfolioPage() {
                             <div className="grid grid-cols-1 lg:grid-cols-2">
                                 <div className="relative aspect-[16/10] lg:aspect-auto lg:h-full">
                                     <img
-                                        src="/octupus_ai_featured.jpg"
+                                        src={Octupus}
                                         alt="Featured: Octupus.ai"
                                         className="absolute inset-0 h-full w-full object-cover"
                                     />
@@ -314,14 +318,14 @@ export default function PortfolioPage() {
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-                            <Link href="/contact?service=AI%20Solutions">
+                            <Link href="/pricing-calculator">
                                 <Button className="bg-brand-coral hover:bg-white hover:text-brand-purple text-white px-8 py-4 font-semibold transition-all duration-300">
                                     Get Your Project Estimate
                                     <ArrowRight className="ml-2 h-5 w-5" />
                                 </Button>
                             </Link>
 
-                            <Link href="/community">
+                            <Link href="/contact?service=AI%20Solutions">
                                 <Button
                                     variant="outline"
                                     className="border-2 border-brand-purple text-brand-purple hover:bg-brand-coral hover:text-white bg-white px-8 py-4 font-semibold transition-all duration-300"

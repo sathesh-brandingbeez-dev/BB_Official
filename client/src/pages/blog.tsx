@@ -323,10 +323,8 @@ export default function Blog() {
                     {/* CTA pinned to bottom */}
                     <div className="mt-auto pt-4 border-t">
                       <Link href={`/blog/${post.slug}`}>
-                        <Button
-                          variant="outline"
-                          className="w-full hover:bg-brand-purple hover:text-white transition-colors"
-                        >
+                        <Button variant="outline"
+                          className="w-full hover:bg-brand-purple hover:text-white transition-colors" >
                           Read Article
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
