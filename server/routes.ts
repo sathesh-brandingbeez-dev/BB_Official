@@ -23,7 +23,7 @@ declare global {
     }
   }
 }
-import { storage } from "./db-storage";
+import { storage } from "./storage";
 import {
   analyzeSEOAudit,
   analyzeWebsiteSEO,
@@ -60,6 +60,7 @@ import {
 import { z } from "zod";
 import { sendContactNotification, sendEmailViaGmail } from "./email-service";
 import { notificationService } from "./notification-service";
+import { connectToDatabase, getMongooseConnection } from "./db";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Apply security middleware
@@ -134,12 +135,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Database health check endpoint
   app.get("/api/health/database", async (req, res) => {
     try {
-      const { db } = await import("./db");
+      await connectToDatabase();
+      const connection = getMongooseConnection();
+      await connection.db.admin().command({ ping: 1 });
 
-      // Test basic database connectivity
-      const result = await db.execute("SELECT 1 as health_check");
-
-      // Test blog_posts table specifically
+      // Test blog_posts collection specifically
       const blogCount = await storage.getAllBlogPosts();
       const publishedCount = await storage.getPublishedBlogPosts();
 
@@ -150,7 +150,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         stats: {
           totalBlogPosts: blogCount.length,
           publishedBlogPosts: publishedCount.length,
-          healthCheck: result?.[0]?.health_check === 1 ? "passed" : "failed",
+          healthCheck: "passed",
         },
       });
     } catch (error) {
@@ -1392,7 +1392,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       console.log(
         "📊 Database connection status:",
-        process.env.DATABASE_URL ? "URL Present" : "URL Missing",
+        process.env.MONGODB_URI || process.env.MONGODB_URI_DEVELOPMENT
+          ? "URL Present"
+          : "URL Missing",
       );
       console.log(
         "🌐 Request origin:",
@@ -1404,9 +1406,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Test database connection first
       console.log("🔄 Testing database connection...");
-      const { db } = await import("./db");
-      const dbTest = await db.execute("SELECT 1 as test");
-      console.log("✅ Database connection test result:", dbTest);
+      await connectToDatabase();
+      const connection = getMongooseConnection();
+      await connection.db.admin().command({ ping: 1 });
+      console.log("✅ MongoDB connection healthy");
 
       // Force fresh data from database - no caching
       console.log("🔄 Calling storage.getPublishedBlogPosts()...");
@@ -1508,9 +1511,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("❌ Error message:", (error as Error).message);
       console.error("❌ Environment details:", {
         nodeEnv: process.env.NODE_ENV,
-        hasDbUrl: !!process.env.DATABASE_URL,
-        hasDevelopmentUrl: !!process.env.DATABASE_URL_DEVELOPMENT,
-        hasProductionUrl: !!process.env.DATABASE_URL_PRODUCTION,
+        hasDbUrl: !!process.env.MONGODB_URI,
+        hasDevelopmentUrl: !!process.env.MONGODB_URI_DEVELOPMENT,
+        hasProductionUrl: !!process.env.MONGODB_URI_PRODUCTION,
         timestamp: new Date().toISOString(),
       });
       console.error("=== BLOG API ERROR END ===\n");

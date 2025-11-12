@@ -1,50 +1,34 @@
 import { Router, Request, Response } from "express";
 import { sendEmailViaGmail } from "../email-service";
-import { db } from "../db";
-import { newsletterSubscribers } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { storage } from "../storage";
+import { insertNewsletterSubscriberSchema } from "@shared/schema";
 
 const router = Router();
 
 router.post("/subscribe", async (req: Request, res: Response) => {
-  const { email, name } = req.body;
+  const parseResult = insertNewsletterSubscriberSchema.safeParse(req.body);
 
-  // Validate required fields
-  if (!email || !name) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Name and email are required" });
+  if (!parseResult.success) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid subscriber data",
+      errors: parseResult.error.issues,
+    });
   }
 
-  // Simple email regex (can replace with a library like validator.js)
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Invalid email format" });
-  }
+  const { email, name } = parseResult.data;
 
   try {
-    // Check if already subscribed
-    const existing = await db
-      .select()
-      .from(newsletterSubscribers)
-      .where(eq(newsletterSubscribers.email, email));
+    const existing = await storage.getNewsletterSubscriberByEmail(email);
 
-    if (existing.length) {
+    if (existing) {
       return res
         .status(409)
         .json({ success: false, message: "Email already subscribed" });
     }
 
-    // Save to DB
-    await db.insert(newsletterSubscribers).values({
-      email,
-      name,
-      subscribedAt: new Date(),
-    });
+    await storage.createNewsletterSubscriber({ email, name });
 
-    // Send confirmation email (non-blocking but awaited here)
     await sendEmailViaGmail({
       email,
       name,
@@ -56,7 +40,10 @@ router.post("/subscribe", async (req: Request, res: Response) => {
       .status(201)
       .json({ success: true, message: "Subscribed successfully!" });
   } catch (err) {
-    console.error("Subscription error:", err instanceof Error ? err.message : err);
+    console.error(
+      "Subscription error:",
+      err instanceof Error ? err.message : err,
+    );
     return res
       .status(500)
       .json({ success: false, message: "Failed to subscribe" });
