@@ -138,6 +138,69 @@ export interface CaseStudy extends InsertCaseStudy {
   updatedAt: Date;
 }
 
+export const insertPortfolioItemSchema = z.object({
+  slug: z.string().min(1),
+  title: z.string().min(1),
+  industry: z.string().min(1),
+  client: z.string().optional(),
+  badge: z.string().optional(),
+  investment: z.string().optional(),
+  totalValue: z.string().optional(),
+  roi: z.string().optional(),
+  description: z.string().optional(),
+  features: z.array(z.string()).optional(),
+  techStack: z.array(z.string()).optional(),
+  timeline: z.string().optional(),
+  imageUrl: z.string().optional(),
+  image: z.string().optional(),
+  isFeatured: z.boolean().optional(),
+  orderIndex: z.number().int().optional(),
+  isActive: z.boolean().optional(),
+});
+export type InsertPortfolioItem = z.infer<typeof insertPortfolioItemSchema>;
+export interface PortfolioItem extends InsertPortfolioItem {
+  id: number;
+  isFeatured: boolean;
+  orderIndex: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const heroStatSchema = z.object({
+  kpi: z.string().min(1),
+  label: z.string().min(1),
+});
+
+const testimonialSchema = z.object({
+  quote: z.string().min(1),
+  who: z.string().min(1),
+  tag: z.string().optional(),
+});
+
+export const insertPortfolioContentSchema = z.object({
+  heroTitle: z.string().min(1),
+  heroHighlight: z.string().optional(),
+  heroSubtitle: z.string().optional(),
+  heroDescription: z.string().optional(),
+  heroStats: z.array(heroStatSchema).optional(),
+  heroPrimaryCtaText: z.string().optional(),
+  heroPrimaryCtaHref: z.string().optional(),
+  heroSecondaryCtaText: z.string().optional(),
+  heroSecondaryCtaHref: z.string().optional(),
+  testimonialsTitle: z.string().optional(),
+  testimonialsSubtitle: z.string().optional(),
+  testimonials: z.array(testimonialSchema).optional(),
+});
+export type InsertPortfolioContent = z.infer<typeof insertPortfolioContentSchema>;
+export interface PortfolioContent extends InsertPortfolioContent {
+  id: number;
+  heroStats: z.infer<typeof heroStatSchema>[];
+  testimonials: z.infer<typeof testimonialSchema>[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Pricing Packages
 export const insertPricingPackageSchema = z.object({
   servicePage: z.string().min(1),

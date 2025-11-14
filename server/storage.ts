@@ -20,7 +20,11 @@ import type {
   InsertServicePage,
   InsertUser,
   InsertNewsletterSubscriber,
+  InsertPortfolioItem,
+  InsertPortfolioContent,
   NewsletterSubscriber,
+  PortfolioItem,
+  PortfolioContent,
   PricingPackage,
   SeoAudit,
   ServicePage,
@@ -126,6 +130,24 @@ export interface IStorage {
   getNewsletterSubscriberByEmail(
     email: string,
   ): Promise<NewsletterSubscriber | undefined>;
+  getAllNewsletterSubscribers(): Promise<NewsletterSubscriber[]>;
+  deleteNewsletterSubscriber(id: number): Promise<void>;
+
+  createPortfolioItem(item: InsertPortfolioItem): Promise<PortfolioItem>;
+  getAllPortfolioItems(): Promise<PortfolioItem[]>;
+  getPublicPortfolioItems(): Promise<PortfolioItem[]>;
+  getFeaturedPortfolioItems(): Promise<PortfolioItem[]>;
+  getPortfolioItemBySlug(slug: string): Promise<PortfolioItem | undefined>;
+  updatePortfolioItem(
+    id: number,
+    data: Partial<InsertPortfolioItem>,
+  ): Promise<PortfolioItem>;
+  deletePortfolioItem(id: number): Promise<void>;
+
+  getPortfolioContent(): Promise<PortfolioContent>;
+  upsertPortfolioContent(
+    data: InsertPortfolioContent,
+  ): Promise<PortfolioContent>;
 }
 
 export const storage: IStorage = new DatabaseStorage();

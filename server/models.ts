@@ -27,6 +27,10 @@ import type {
   SeoAudit,
   ServicePage,
   User,
+  PortfolioItem,
+  InsertPortfolioItem,
+  PortfolioContent,
+  InsertPortfolioContent,
 } from "@shared/schema";
 
 const { model, models } = mongoose;
@@ -357,6 +361,90 @@ export const NewsletterSubscriberModel =
     newsletterSubscriberSchema,
   );
 
+interface PortfolioItemDocument extends mongoose.Document, PortfolioItem {}
+const portfolioItemSchema = new Schema<PortfolioItemDocument>(
+  {
+    id: numericIdField,
+    slug: { type: String, required: true, unique: true },
+    title: { type: String, required: true },
+    industry: { type: String, required: true },
+    client: String,
+    badge: String,
+    investment: String,
+    totalValue: String,
+    roi: String,
+    description: String,
+    features: { type: [String], default: [] },
+    techStack: { type: [String], default: [] },
+    timeline: String,
+    imageUrl: String,
+    image: String,
+    isFeatured: { type: Boolean, default: false },
+    orderIndex: { type: Number, default: 0 },
+    isActive: { type: Boolean, default: true },
+  },
+  {
+    collection: "portfolio_items",
+    versionKey: false,
+    timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" },
+  },
+);
+export const PortfolioItemModel =
+  (models.PortfolioItem as Model<PortfolioItemDocument>) ||
+  model<PortfolioItemDocument>("PortfolioItem", portfolioItemSchema);
+
+interface PortfolioContentDocument
+  extends mongoose.Document,
+    PortfolioContent {}
+const portfolioContentSchema = new Schema<PortfolioContentDocument>(
+  {
+    id: numericIdField,
+    heroTitle: { type: String, required: true },
+    heroHighlight: String,
+    heroSubtitle: String,
+    heroDescription: String,
+    heroStats: {
+      type: [
+        new Schema(
+          {
+            kpi: { type: String, required: true },
+            label: { type: String, required: true },
+          },
+          { _id: false },
+        ),
+      ],
+      default: [],
+    },
+    heroPrimaryCtaText: String,
+    heroPrimaryCtaHref: String,
+    heroSecondaryCtaText: String,
+    heroSecondaryCtaHref: String,
+    testimonialsTitle: String,
+    testimonialsSubtitle: String,
+    testimonials: {
+      type: [
+        new Schema(
+          {
+            quote: { type: String, required: true },
+            who: { type: String, required: true },
+            tag: String,
+          },
+          { _id: false },
+        ),
+      ],
+      default: [],
+    },
+  },
+  {
+    collection: "portfolio_content",
+    versionKey: false,
+    timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" },
+  },
+);
+export const PortfolioContentModel =
+  (models.PortfolioContent as Model<PortfolioContentDocument>) ||
+  model<PortfolioContentDocument>("PortfolioContent", portfolioContentSchema);
+
 export type {
   BlogPostDocument,
   CaseStudyDocument,
@@ -372,6 +460,8 @@ export type {
   ServicePageDocument,
   UserDocument,
   NewsletterSubscriberDocument,
+  PortfolioItemDocument,
+  PortfolioContentDocument,
 };
 
 export type {
@@ -388,4 +478,6 @@ export type {
   InsertSeoAudit as SeoAuditInput,
   InsertServicePage as ServicePageInput,
   InsertUser as UserInput,
+  InsertPortfolioItem as PortfolioItemInput,
+  InsertPortfolioContent as PortfolioContentInput,
 };
