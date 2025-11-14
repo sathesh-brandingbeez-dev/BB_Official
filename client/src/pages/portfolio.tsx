@@ -209,11 +209,108 @@ function StudyCard({ cs }: { cs: PortfolioItem }) {
     );
 }
 
+// Calculate stats from portfolio items
+function calculatePortfolioStats(items: PortfolioItem[]): PortfolioHeroStat[] {
+    if (!items || items.length === 0) {
+        return defaultContent.heroStats;
+    }
+
+    // Count ALL projects (not just active ones)
+    const projectCount = items.length;
+
+    // Helper function to parse numeric values from strings
+    const parseNumericValue = (value: string): number => {
+        if (!value) return 0;
+        // Remove $ symbol, commas, and "K" suffix, keep decimals
+        const cleaned = value.replace(/[$,K]/g, "").trim();
+        const parsed = parseFloat(cleaned);
+        return isNaN(parsed) ? 0 : parsed;
+    };
+
+    // Calculate total value (sum of totalValue)
+    // Note: totalValue is already in thousands (e.g., "7.5K" means $7,500)
+    let totalValueInThousands = 0;
+    items.forEach((item) => {
+        if (item.totalValue) {
+            totalValueInThousands += parseNumericValue(item.totalValue);
+        }
+    });
+
+    // Calculate average ROI
+    let totalRoi = 0;
+    let roiCount = 0;
+    items.forEach((item) => {
+        if (item.roi) {
+            const roiValue = parseNumericValue(item.roi);
+            if (roiValue > 0) {
+                totalRoi += roiValue;
+                roiCount++;
+            }
+        }
+    });
+    const averageRoi = roiCount > 0 ? Math.round(totalRoi / roiCount) : 0;
+
+    // Format total value with proper decimal places
+    const formattedTotalValue = totalValueInThousands > 0 
+        ? `$${totalValueInThousands.toFixed(1)}K` 
+        : "$0K";
+
+    return [
+        {
+            kpi: `${projectCount}+`,
+            label: "Projects Delivered",
+        },
+        {
+            kpi: formattedTotalValue,
+            label: "Total Value Created",
+        },
+        {
+            kpi: `${averageRoi}%`,
+            label: "Average ROI",
+        },
+    ];
+}
+
+// Save calculated stats to database
+async function saveStatsToDatabase(stats: PortfolioHeroStat[]): Promise<boolean> {
+    try {
+        const token = typeof window !== "undefined" ? localStorage.getItem("adminToken") : null;
+        
+        if (!token) {
+            console.log("Not authenticated - skipping stats save");
+            return false;
+        }
+
+        const response = await fetch("/api/admin/portfolio-content/stats", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ heroStats: stats }),
+        });
+
+        if (!response.ok) {
+            console.error("Failed to save stats to database");
+            return false;
+        }
+
+        console.log("Stats saved to database successfully");
+        return true;
+    } catch (error) {
+        console.error("Error saving stats to database:", error);
+        return false;
+    }
+}
+
 export default function PortfolioPage() {
     const [items, setItems] = useState<PortfolioItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [content, setContent] = useState<PortfolioContent | null>(null);
     const [featuredExpanded, setFeaturedExpanded] = useState(false);
+    const [calculatedStats, setCalculatedStats] = useState<PortfolioHeroStat[]>(
+        defaultContent.heroStats
+    );
 
     useEffect(() => {
         let cancelled = false;
@@ -228,12 +325,19 @@ export default function PortfolioPage() {
                 try {
                     const itemsData = await itemsRes.json();
                     if (!cancelled) {
-                        setItems(Array.isArray(itemsData) ? itemsData : []);
+                        const itemsArray = Array.isArray(itemsData) ? itemsData : [];
+                        setItems(itemsArray);
+                        // Calculate stats from items
+                        const stats = calculatePortfolioStats(itemsArray);
+                        setCalculatedStats(stats);
+                        // Save stats to database if authenticated
+                        await saveStatsToDatabase(stats);
                     }
                 } catch (itemsError) {
                     console.error("Failed to parse portfolio items", itemsError);
                     if (!cancelled) {
                         setItems([]);
+                        setCalculatedStats(defaultContent.heroStats);
                     }
                 }
 
@@ -278,6 +382,7 @@ export default function PortfolioPage() {
                 if (!cancelled) {
                     setItems([]);
                     setContent(null);
+                    setCalculatedStats(defaultContent.heroStats);
                 }
             } finally {
                 if (!cancelled) {
@@ -307,10 +412,8 @@ export default function PortfolioPage() {
     }, [featured?.id]);
 
     const heroContent = content ?? defaultContent;
-    const heroStats =
-        heroContent.heroStats && heroContent.heroStats.length > 0
-            ? heroContent.heroStats
-            : defaultContent.heroStats;
+    // Use calculated stats from portfolio items instead of static content
+    const heroStats = calculatedStats;
     const testimonials =
         heroContent.testimonials && heroContent.testimonials.length > 0
             ? heroContent.testimonials
